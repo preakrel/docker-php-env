@@ -1,0 +1,75 @@
+version: "2"
+services:
+    docker-php:
+        image: "daocloud.io/php_ity/docker-php"
+        container_name: docker-php
+        networks:
+            php_ity:
+                ipv4_address: 172.18.1.2
+        ulimits:
+            nproc: 65535
+        hostname: docker-php
+        mem_limit: 512m
+        user: root
+        ports:
+            - "9000:9000"
+        environment:
+            SD_NODE_NAME: "admin"
+        volumes:
+            - ./Docker/config/php/php.ini:/usr/local/php/etc/php.ini:ro
+            - ./Docker/config/hosts:/etc/hosts:ro
+            - ./Webroot:/home/www/Webroot
+    rabbitmq:
+        image: "daocloud.io/library/rabbitmq:3.5.4-management"
+        container_name: rabbitmq
+        networks:
+            php_ity:
+                ipv4_address: 172.18.1.3
+        ulimits:
+            nproc: 65535
+        environment:
+            RABBITMQ_ERLANG_COOKIE: 'secret cookie here'
+        hostname: rabbitmq
+        mem_limit: 512m
+        ports:
+            - "15672:15672"
+            - "5672:5672"
+        volumes:
+            - ./Docker/config/hosts:/etc/hosts:ro
+    nginx:
+        image: "nginx:latest"
+        container_name: nginx
+        ports:
+            - "0.0.0.0:80:80"
+        networks:
+            php_ity:
+                ipv4_address: 172.18.1.4
+        ulimits:
+            nproc: 65535
+        hostname: nginx
+        mem_limit: 256m
+        restart: always
+        volumes_from:
+            - rabbitmq
+            - docker-php
+        depends_on:
+            - rabbitmq
+            - docker-php
+        links:
+            - rabbitmq
+            - docker-php
+        volumes:
+            - ./Docker/config/hosts:/etc/hosts:ro
+            - ./Docker/config/nginx/conf/nginx.conf:/etc/nginx/conf/nginx.conf:ro
+            - ./Docker/config/nginx/conf.d:/etc/nginx/conf.d:ro
+            - ./Webroot:/home/www/Webroot
+networks:
+    php_ity:
+        driver: bridge
+        driver_opts:
+            com.docker.network.enable_ipv6: "false"
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.1.0/24
+                  gateway: 172.18.1.1
