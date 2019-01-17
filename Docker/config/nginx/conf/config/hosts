@@ -1,0 +1,6 @@
+127.0.0.1	localhost
+172.18.1.2	docker-php
+172.18.1.3	rabbitmq
+172.18.1.4	nginx
+
+

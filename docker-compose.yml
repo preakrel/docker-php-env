@@ -61,7 +61,9 @@ services:
         volumes:
             - ./Docker/config/hosts:/etc/hosts:ro
             - ./Docker/config/nginx/conf/nginx.conf:/etc/nginx/conf/nginx.conf:ro
-            - ./Docker/config/nginx/conf.d:/etc/nginx/conf.d:ro
+            - ./Docker/config/nginx/conf.d:/etc/nginx/conf.d:ro 
+            - ./Docker/config/nginx/log:/var/log/nginx 
+            - ./Docker/config/nginx/ssl:/etc/nginx/ssl 
             - ./Webroot:/home/www/Webroot
 networks:
     php_ity:
